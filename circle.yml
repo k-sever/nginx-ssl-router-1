@@ -11,5 +11,5 @@ dependencies:
 
 test:
   override:
-    - docker run $CIRCLE_SHA1 ansible-playbook -i /src/tests/inventory -c local /src/tests/test.yml --syntax-check
-    - docker run $CIRCLE_SHA1 ansible-playbook -i /src/tests/inventory -c local /src/tests/test.yml
+    - docker run $CIRCLE_SHA1 ansible-playbook -i /nginx-ssl-router/tests/inventory -c local /nginx-ssl-router/tests/test.yml --syntax-check
+    - docker run $CIRCLE_SHA1 ansible-playbook -i /nginx-ssl-router/tests/inventory -c local /nginx-ssl-router/tests/test.yml

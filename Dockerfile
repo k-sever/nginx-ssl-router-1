@@ -6,7 +6,7 @@ RUN sudo apt-get -y install python-pip
 RUN sudo pip install 'boto==2.38.0'
 RUN pip install setuptools --upgrade
 
-ADD . /src
-WORKDIR /src
+ADD . /nginx-ssl-router
+WORKDIR /nginx-ssl-router
 
 
