@@ -1,13 +1,15 @@
 ---
 machine:
-  python:
-    version: 2.7.11
+  services:
+    - docker
+
 dependencies:
+  cache_directories:
+    - "~/docker"
   override:
-    - pip install 'ansible>=2.1,<2.2'
-    - sudo pip install 'boto==2.38.0'
-    - pip install setuptools --upgrade
+    - docker build --rm=false -t $CIRCLE_SHA1 .
+
 test:
   override:
-    - ansible-playbook -i tests/inventory -c local tests/test.yml --syntax-check
-    - ansible-playbook -i tests/inventory -c local tests/test.yml
+    - docker run $CIRCLE_SHA1 ansible-playbook -i /src/tests/inventory -c local /src/tests/test.yml --syntax-check
+    - docker run $CIRCLE_SHA1 ansible-playbook -i /src/tests/inventory -c local /src/tests/test.yml
