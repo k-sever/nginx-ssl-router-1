@@ -10,7 +10,7 @@ server {
     real_ip_header X-Forwarded-For;
     real_ip_recursive on;
 
-    rewrite ^/$ http://certificates.verygoodsecurity.io/docs/cname.html redirect;
+    rewrite ^/$ {{ cert_mgr_url }}/docs/cname.html redirect;
 
     location /.well-known/acme-challenge/ {
       proxy_set_header        Via terminator;
@@ -28,7 +28,7 @@ server {
     listen              80 default_server;
     server_name         _;    
 
-    rewrite ^/$ http://certificates.verygoodsecurity.io/docs/http.html redirect;
+    rewrite ^/$ {{ cert_mgr_url }}/docs/http.html redirect;
 
     location /.well-known/acme-challenge/ {
       resolver                {{ ansible_dns.nameservers | join (',') }};      
