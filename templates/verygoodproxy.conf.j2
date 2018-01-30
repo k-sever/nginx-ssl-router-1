@@ -20,8 +20,9 @@ server {
     rewrite ^/$ {{ cert_mgr_url }}/docs/http.html redirect;
 
     location /.well-known/acme-challenge/ {
-      resolver                {{ ansible_dns.nameservers | join (',') }};      
-      proxy_pass              {{ cert_mgr_url }};
+      resolver                {{ ansible_dns.nameservers | join (',') }};
+      set $cert_manager       {{ cert_mgr_url }};
+      proxy_pass              $cert_manager;
       proxy_read_timeout      90;
     }
 }
