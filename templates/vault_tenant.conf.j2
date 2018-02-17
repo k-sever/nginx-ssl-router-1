@@ -22,6 +22,7 @@ server {
       proxy_set_header        X-Real-IP $proxy_protocol_addr;
       proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
       proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        VGS-Tenant {{ item.split('/')[-2].split('.')[0] }};
       resolver                {{ ansible_dns.nameservers | join (',') }};
       set                     $vault                                          https://{{ item.split('/')[-2] }};
       proxy_pass              $vault;
