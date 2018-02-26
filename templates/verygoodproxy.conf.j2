@@ -31,7 +31,7 @@ server {
       proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header        VGS-Tenant $tenant;
       resolver                {{ ansible_dns.nameservers | join (',') }};
-      set                     $vault                                          https://reverse.$environment.verygoodproxy.com;
+      set                     $vault                                          https://reverse.$environment.verygoodproxy.$tld;
       proxy_pass              $vault;
       proxy_read_timeout      90;
     }
