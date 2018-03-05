@@ -24,7 +24,7 @@ server {
     access_log /var/log/nginx/access.log elb_log;
 
     location / {
-      proxy_set_header        Host reverse.$environment.verygoodproxy.com;
+      proxy_set_header        Host reverse.$environment.verygoodproxy.$tld;
       proxy_set_header        Via terminator;
       proxy_set_header        X-Forwarded-Host $host;
       proxy_set_header        X-Real-IP $remote_addr;
