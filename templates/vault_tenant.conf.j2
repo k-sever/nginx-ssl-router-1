@@ -24,8 +24,10 @@ server {
       proxy_set_header        X-Forwarded-Proto $scheme;
       proxy_set_header        VGS-Tenant {{ item.split('/')[-2].split('.')[0] }};
       resolver                {{ ansible_dns.nameservers | join (',') }};
-      set                     $vault                                          https://{{ item.split('/')[-2] }};
+      {% if item.split('/')[-2].split('.') | length > 1 %}
+      set                     $vault                                          https://reverse.{{ item.split('/')[-2].split('.')[1] }}.{{ ssl_router_tld }};
       proxy_pass              $vault;
+      {% endif %}
       proxy_read_timeout      90;
     }
 }
