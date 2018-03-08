@@ -65,3 +65,29 @@ http {
 	include /etc/nginx/conf.d/*.conf;
 	include /etc/nginx/sites-enabled/*;
 }
+
+stream {
+	upstream live_forward_proxies {
+		zone forward_proxies 64k;
+		server forward.live.{{ ssl_router_tld }}:8080;
+		server forward.live.{{ ssl_router_tld }}:8080 backup;
+	}
+	upstream sandbox_forward_proxies {
+		zone forward_proxies 64k;
+		server forward.sandbox.{{ ssl_router_tld }}:8080;
+		server forward.sandbox.{{ ssl_router_tld }}:8080 backup;
+	}
+	server {
+		listen     8080;
+		proxy_pass live_forward_proxies;
+	}
+	server {
+		listen     8081;
+		proxy_pass sandbox_forward_proxies;
+	}
+
+	log_format stream_combined '$remote_addr - - [$time_local] $protocol $status $bytes_sent $bytes_received $session_time "$upstream_addr"'
+
+	access_log /var/log/nginx/stream-access.log stream_combined;
+	error_log /var/log/nginx/stream-error.log;
+}
