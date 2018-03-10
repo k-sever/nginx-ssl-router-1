@@ -16,7 +16,7 @@ job-defaults: &job-defaults
     - AWS_PROFILE: vgs-dev
 
 jobs:
-  deploy-python:
+  build:
     working_directory: ~/nginx-ssl-router
     docker:
       - image: circleci/python:3.6
