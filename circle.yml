@@ -25,12 +25,18 @@ jobs:
       - checkout
       - *attach_workspace
       - run:
-          name: "Python build + publish"
+          name: Setup AWS
+          command: ./scripts/env.sh
+      - run:
+          name: "Python install"
           command: |
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-
+      - run:
+          name: "Run ansible"
+          command: |
+            . venv/bin/activate
             ansible-playbook -i inventory -c local provision-certificates.yml
       - run:
           name: "Build docker"
