@@ -1,0 +1,50 @@
+---
+  - hosts: all
+    vars:
+      - ssl_router_s3_bucket: vault-dev-01-audits-01-citadel-ob362bzzrwee
+      - ssl_router_s3_path: ssl/
+      - ansible_ec2_placement_region: us-west-2
+      - nginx_config_dir: build/etc/nginx/
+      - ssl_router_nginx_config_dir: build/etc/nginx/conf.d/
+      - cert_mgr_url: http://certificates.verygoodsecurity.io
+      - ssl_router_tld: verygoodproxy.io
+    tasks:
+      - name: Remove build
+        file:
+          state: absent
+          path: "{{ ssl_router_nginx_config_dir }}"
+
+      - name: ensure {{ ssl_router_nginx_config_dir }} exists
+        file: path={{ ssl_router_nginx_config_dir }} state=directory
+
+      - name: lookup certificates
+        aws_s3: bucket="{{ ssl_router_s3_bucket }}" prefix="{{ ssl_router_s3_path }}" mode=list region={{ansible_ec2_placement_region}}
+        register: ssl_domains
+
+      - debug: msg="{{ item }}"
+        with_items: "{{ ssl_domains.s3_keys }}"
+
+      # s3 module failing, using shell command
+      - name: copy ssl certificates
+        shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/{{ item }} {{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert
+        with_items: "{{ ssl_domains.s3_keys }}"
+
+      - name: set permissions
+        file: path="{{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert" mode=0400
+        with_items: "{{ ssl_domains.s3_keys }}"
+
+      - name: add nginx.conf
+        template: src=templates/nginx.conf.j2 dest={{ nginx_config_dir }}nginx.conf mode=0644
+
+      - name: add log_format_elb
+        template: src=templates/log_format_elb.conf.j2 dest={{ ssl_router_nginx_config_dir }}log_format_elb.conf mode=0644
+
+      - name: add catch all
+        template: src=templates/verygoodproxy.conf.j2 dest={{ ssl_router_nginx_config_dir }}verygoodproxy.conf mode=0400
+
+      - name: add catch all certificate
+        shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/ssl.verygoodproxy.cert {{ ssl_router_nginx_config_dir }}verygoodproxy.cert
+
+      - name: add tenant configs
+        template: src=templates/vault_tenant.conf.j2 dest={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config mode=0400
+        with_items: "{{ ssl_domains.s3_keys }}"
