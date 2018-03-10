@@ -37,7 +37,7 @@ jobs:
           name: "Run ansible"
           command: |
             . venv/bin/activate
-            ansible-playbook -i inventory -c local provision-certificates.yml
+            AWS_PROFILE: vgs-dev ansible-playbook -i inventory -c local provision-certificates.yml
       - run:
           name: "Build docker"
           command: |

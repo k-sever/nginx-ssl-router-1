@@ -30,7 +30,7 @@ server {
       proxy_set_header        X-Real-IP $remote_addr;
       proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header        VGS-Tenant $tenant;
-      resolver                8.8.8.8;
+      resolver                {{ dns_resolver }};
       set                     $vault                                          https://reverse.$environment.verygoodproxy.$tld;
       proxy_pass              $vault;
       proxy_read_timeout      90;
@@ -44,7 +44,7 @@ server {
     rewrite ^/$ {{ cert_mgr_url }}/docs/http.html redirect;
 
     location /.well-known/acme-challenge/ {
-      resolver                8.8.8.8;
+      resolver                {{ dns_resolver }};
       set $cert_manager       {{ cert_mgr_url }};
       proxy_pass              $cert_manager;
       proxy_read_timeout      90;

@@ -67,6 +67,9 @@ http {
 }
 
 stream {
+
+	resolver {{ dns_resolver }};
+
 	upstream live_forward_proxies {
 		zone forward_proxies 64k;
 		server forward.live.{{ ssl_router_tld }}:8080;

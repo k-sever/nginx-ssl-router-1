@@ -8,6 +8,7 @@
       - ssl_router_nginx_config_dir: build/etc/nginx/conf.d/
       - cert_mgr_url: http://certificates.verygoodsecurity.io
       - ssl_router_tld: verygoodproxy.io
+      - dns_resolver: 8.8.8.8
     tasks:
       - name: Remove build
         file:
