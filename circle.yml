@@ -33,8 +33,8 @@ jobs:
 
             ansible-playbook -i inventory -c local provision-certificates.yml
       - run:
-        name: "Build docker"
-        command: |
+          name: "Build docker"
+          command: |
             docker build .
 workflows:
   version: 2
