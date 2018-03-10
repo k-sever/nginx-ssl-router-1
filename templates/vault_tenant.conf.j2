@@ -1,35 +1,45 @@
 # {{ ansible_managed }}
 # This template represents a termination point for a SSL certificate
 
+{% set url_parts = item.split('/') %}
+{% set proxy_address = url_parts[-2] %}
+{% set custom_host_name = url_parts[-1] %}
+{% set passthrough_host_name = url_parts[1] == 'pt' %}
+
+{% if proxy_address.split('.') | length > 1 %}
+
+{% set data_environment = proxy_address.split('.')[1] %}
+{% set tenant = proxy_address.split('.')[0] %}
+
 server {
+
     listen              443 ssl proxy_protocol;
-    server_name         {{ item | basename }};
-    ssl_certificate     {{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert;
-    ssl_certificate_key {{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert;
+    server_name         {{ custom_host_name }};
+    ssl_certificate     /etc/nginx/conf.d/{{ custom_host_name }}.cert;
+    ssl_certificate_key /etc/nginx/conf.d/{{ custom_host_name }}.cert;
     ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers         HIGH:!aNULL:!MD5;
 
-    set_real_ip_from {{ ansible_default_ipv4.network | ipsubnet(16,0) }};
+    set_real_ip_from 0.0.0.0/0;
     real_ip_header proxy_protocol;
     real_ip_recursive on;
 
-    access_log /var/log/nginx/access.log elb_log;
+    access_log /dev/stdout elb_log;
 
-    {% if item.split('/')[-2].split('.') | length > 1 %}
     location / {
-      proxy_set_header        Host reverse.{{ item.split('/')[-2].split('.')[1] }}.{{ ssl_router_tld }};
+      proxy_set_header        Host {% if passthrough_host_name %}$host{% else %}reverse.{{ data_environment }}.{{ ssl_router_tld }}{% endif %};
       proxy_set_header        Via terminator;
       proxy_set_header        X-Forwarded-Host $host;
       proxy_set_header        X-Real-IP $proxy_protocol_addr;
       proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
       proxy_set_header        X-Forwarded-Proto $scheme;
-      proxy_set_header        VGS-Tenant {{ item.split('/')[-2].split('.')[0] }};
+      proxy_set_header        VGS-Tenant {{ tenant }};
       resolver                {{ ansible_dns.nameservers | join (',') }};
-      
-      set                     $vault                                          https://reverse.{{ item.split('/')[-2].split('.')[1] }}.{{ ssl_router_tld }};
+
+      set                     $vault    https://reverse.{{ data_environment }}.{{ ssl_router_tld }};
       proxy_pass              $vault;
-      
       proxy_read_timeout      90;
     }
-    {% endif %}
 }
+
+{% endif %}
