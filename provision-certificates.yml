@@ -26,7 +26,7 @@
 
       # s3 module failing, using shell command
       - name: copy ssl certificates
-        shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/{{ item }} {{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert
+        aws_s3: bucket="{{ ssl_router_s3_bucket }}" object="/{{ item }}" dest="{{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert" mode=get
         with_items: "{{ ssl_domains.s3_keys }}"
 
       - name: set permissions
@@ -43,7 +43,7 @@
         template: src=templates/verygoodproxy.conf.j2 dest={{ ssl_router_nginx_config_dir }}verygoodproxy.conf mode=0400
 
       - name: add catch all certificate
-        shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/ssl.verygoodproxy.cert {{ ssl_router_nginx_config_dir }}verygoodproxy.cert
+        aws_s3: bucket="{{ ssl_router_s3_bucket }}" object="/ssl.verygoodproxy.cert" dest="{{ ssl_router_nginx_config_dir }}verygoodproxy.cert" mode=get
 
       - name: add tenant configs
         template: src=templates/vault_tenant.conf.j2 dest={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config mode=0400

@@ -38,8 +38,8 @@ http {
 	# Logging Settings
 	##
 
-	access_log /var/log/nginx/access.log;
-	error_log /var/log/nginx/error.log;
+	access_log /dev/stdout;
+	error_log /dev/stderr;
 
 	##
 	# Gzip Settings
@@ -54,7 +54,7 @@ http {
 	# gzip_buffers 16 8k;
 	# gzip_http_version 1.1;
 	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-	
+
 	# Override maximum file size accepted
 	client_max_body_size 100m;
 
@@ -88,6 +88,6 @@ stream {
 
 	log_format stream_combined '$remote_addr - - [$time_local] $protocol $status $bytes_sent $bytes_received $session_time "$upstream_addr"'
 
-	access_log /var/log/nginx/stream-access.log stream_combined;
-	error_log /var/log/nginx/stream-error.log;
+	access_log /dev/stdout stream_combined;
+	error_log /dev/stderr;
 }

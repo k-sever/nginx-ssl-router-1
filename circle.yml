@@ -32,7 +32,10 @@ jobs:
             pip install -r requirements.txt
 
             ansible-playbook -i inventory -c local provision-certificates.yml
-
+      - run:
+        name: "Build docker"
+        command: |
+            docker build .
 workflows:
   version: 2
   build_and_test:
