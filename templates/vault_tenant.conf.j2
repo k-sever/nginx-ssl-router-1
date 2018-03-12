@@ -13,8 +13,6 @@ server {
     real_ip_header proxy_protocol;
     real_ip_recursive on;
 
-    access_log /var/log/nginx/access.log elb_log;
-
     {% if item.split('/')[-2].split('.') | length > 1 %}
     location / {
       proxy_set_header        Host reverse.{{ item.split('/')[-2].split('.')[1] }}.{{ ssl_router_tld }};
