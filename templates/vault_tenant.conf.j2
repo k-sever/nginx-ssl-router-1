@@ -24,8 +24,6 @@ server {
     real_ip_header proxy_protocol;
     real_ip_recursive on;
 
-    access_log /var/log/nginx/access.log elb_log;
-
     location / {
       proxy_set_header        Host {% if passthrough_host_name %}$host{% else %}reverse.{{ data_environment }}.{{ ssl_router_tld }}{% endif %};
       proxy_set_header        Via terminator;

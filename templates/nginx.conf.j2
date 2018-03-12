@@ -4,90 +4,116 @@ pid /run/nginx.pid;
 include /etc/nginx/modules-enabled/*.conf;
 
 events {
-	worker_connections 768;
-	# multi_accept on;
+    worker_connections 768;
+    # multi_accept on;
 }
 
 http {
+    ##
+    # Basic Settings
+    ##
 
-	##
-	# Basic Settings
-	##
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    # server_tokens off;
 
-	sendfile on;
-	tcp_nopush on;
-	tcp_nodelay on;
-	keepalive_timeout 65;
-	types_hash_max_size 2048;
-	# server_tokens off;
+    # server_names_hash_bucket_size 64;
+    # server_name_in_redirect off;
 
-	# server_names_hash_bucket_size 64;
-	# server_name_in_redirect off;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
 
-	include /etc/nginx/mime.types;
-	default_type application/octet-stream;
+    ##
+    # SSL Settings
+    ##
 
-	##
-	# SSL Settings
-	##
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+    ssl_prefer_server_ciphers on;
 
-	ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
-	ssl_prefer_server_ciphers on;
+    ##
+    # Logging Settings
+    ##
 
-	##
-	# Logging Settings
-	##
+    log_format json_combined escape=json '{ '
+      '"time": "$time_local", '
+      '"remote_addr": "$proxy_protocol_addr", '
+      '"remote_user": "$remote_user", '
+      '"request": "$request", '
+      '"status": $status, '
+      '"body_bytes_sent": $body_bytes_sent, '
+      '"request_time": $request_time, '
+      '"http_referrer": "$http_referer", '
+      '"http_user_agent": "$http_user_agent", '
+      '"ssl_protocol": "$ssl_protocol", '
+      '"ssl_cipher": "$ssl_cipher" '
+      ' }';
 
-	access_log /var/log/nginx/access.log;
-	error_log /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log json_combined;
+    error_log /var/log/nginx/error.log;
 
-	##
-	# Gzip Settings
-	##
+    ##
+    # Gzip Settings
+    ##
 
-	gzip on;
-	gzip_disable "msie6";
+    gzip on;
+    gzip_disable "msie6";
 
-	# gzip_vary on;
-	# gzip_proxied any;
-	# gzip_comp_level 6;
-	# gzip_buffers 16 8k;
-	# gzip_http_version 1.1;
-	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-	
-	# Override maximum file size accepted
-	client_max_body_size 100m;
+    # gzip_vary on;
+    # gzip_proxied any;
+    # gzip_comp_level 6;
+    # gzip_buffers 16 8k;
+    # gzip_http_version 1.1;
+    # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
-	##
-	# Virtual Host Configs
-	##
+    # Override maximum file size accepted
+    client_max_body_size 100m;
 
-	include /etc/nginx/conf.d/*.conf;
-	include /etc/nginx/sites-enabled/*;
+    ##
+    # Virtual Host Configs
+    ##
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
 }
 
 stream {
-	upstream live_forward_proxies {
-		zone forward_proxies 64k;
-		server forward.live.{{ ssl_router_tld }}:8080;
-		server forward.live.{{ ssl_router_tld }}:8080 backup;
-	}
-	upstream sandbox_forward_proxies {
-		zone forward_proxies 64k;
-		server forward.sandbox.{{ ssl_router_tld }}:8080;
-		server forward.sandbox.{{ ssl_router_tld }}:8080 backup;
-	}
-	server {
-		listen     8080;
-		proxy_pass live_forward_proxies;
-	}
-	server {
-		listen     8081;
-		proxy_pass sandbox_forward_proxies;
-	}
+    upstream live_forward_proxies {
+      zone forward_proxies 64k;
+      server forward.live.{{ ssl_router_tld }}:8080;
+      server forward.live.{{ ssl_router_tld }}:8080 backup;
+    }
+    upstream sandbox_forward_proxies {
+      zone forward_proxies 64k;
+      server forward.sandbox.{{ ssl_router_tld }}:8080;
+      server forward.sandbox.{{ ssl_router_tld }}:8080 backup;
+    }
+    server {
+      listen     8080;
+      proxy_pass live_forward_proxies;
+    }
+    server {
+      listen     8081;
+      proxy_pass sandbox_forward_proxies;
+    }
 
-	log_format stream_combined '$remote_addr - - [$time_local] $protocol $status $bytes_sent $bytes_received $session_time "$upstream_addr"'
+    ##
+    # Logging Settings
+    ##
 
-	access_log /var/log/nginx/stream-access.log stream_combined;
-	error_log /var/log/nginx/stream-error.log;
+    log_format stream_json_combined escape=json '{ '
+      '"time": "$time_local", '
+      '"remote_addr": "$proxy_protocol_addr", '
+      '"protocol": "$protocol", '
+      '"status": $status, '
+      '"bytes_sent": $bytes_sent, '
+      '"bytes_received": $bytes_received, '
+      '"session_time": $session_time, '
+      '"upstream_addr": "$upstream_addr" '
+      ' }';
+
+    access_log /var/log/nginx/stream-access.log stream_json_combined;
+    error_log /var/log/nginx/stream-error.log;
 }
