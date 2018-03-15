@@ -38,6 +38,12 @@ server {
       proxy_pass              $vault;
       proxy_read_timeout      90;
     }
+
+    set $tenant {{ tenant }};
+    set $data_environment {{ data_environment }};
+    set $tenant_endpoint $http_host;
+    access_log /var/log/nginx/access.log json_combined;
+
 }
 
 {% endif %}
