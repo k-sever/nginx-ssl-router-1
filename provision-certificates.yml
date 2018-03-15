@@ -37,9 +37,6 @@
       - name: add nginx.conf
         template: src=templates/nginx.conf.j2 dest={{ nginx_config_dir }}nginx.conf mode=0644
 
-      - name: add log_format_elb
-        template: src=templates/log_format_elb.conf.j2 dest={{ ssl_router_nginx_config_dir }}log_format_elb.conf mode=0644
-
       - name: add catch all
         template: src=templates/verygoodproxy.conf.j2 dest={{ ssl_router_nginx_config_dir }}verygoodproxy.conf mode=0400
 
