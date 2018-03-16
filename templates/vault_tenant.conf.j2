@@ -5,11 +5,12 @@
 {% set proxy_address = url_parts[-2] %}
 {% set custom_host_name = url_parts[-1] %}
 {% set passthrough_host_name = url_parts[1] == 'pt' %}
+{% set proxy_parts = proxy_address.split('.') %}
 
-{% if proxy_address.split('.') | length > 1 %}
+{% if proxy_parts | length > 1 %}
 
-{% set data_environment = proxy_address.split('.')[1] %}
-{% set tenant = proxy_address.split('.')[0] %}
+{% set tenant = proxy_parts[0] %}
+{% set data_environment = proxy_address.split(ssl_router_tld)[0].split('.')[-2] %}
 
 server {
 
