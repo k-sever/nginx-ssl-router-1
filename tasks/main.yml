@@ -53,6 +53,7 @@
 - name: add tenant configs
   template: src=templates/vault_tenant.conf.j2 dest={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config mode=0400
   with_items: "{{ ssl_domains.s3_keys }}"
+  when: item.startswith('ssl/2/') | bool
 
 - name: symlink to available
   file: src={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config dest={{ ssl_router_nginx_enabled_dir }}{{ item | basename }}.config state=link
