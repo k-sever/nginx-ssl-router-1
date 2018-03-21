@@ -7,7 +7,6 @@
       - nginx_config_dir: build/etc/nginx/
       - ssl_router_nginx_config_dir: build/etc/nginx/conf.d/
       - cert_mgr_url: http://certificates.verygoodsecurity.io
-      - ssl_router_tld: verygoodproxy.io
       - dns_resolver: 8.8.8.8
     tasks:
       - name: Remove build
@@ -46,3 +45,4 @@
       - name: add tenant configs
         template: src=templates/vault_tenant.conf.j2 dest={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config mode=0400
         with_items: "{{ ssl_domains.s3_keys }}"
+        when: item.startswith('ssl/2/') | bool

@@ -2,14 +2,12 @@
 # This template represents a termination point for a SSL certificate
 
 {% set url_parts = item.split('/') %}
-{% set proxy_address = url_parts[-2] %}
-{% set custom_host_name = url_parts[-1] %}
-{% set passthrough_host_name = url_parts[1] == 'pt' %}
 
-{% if proxy_address.split('.') | length > 1 %}
-
-{% set data_environment = proxy_address.split('.')[1] %}
-{% set tenant = proxy_address.split('.')[0] %}
+{% set passthrough_host_name = url_parts[2] == 'pt' %}
+{% set upstream_name = url_parts[3] %}
+{% set data_environment = url_parts[4] %}
+{% set tenant = url_parts[5] %}
+{% set custom_host_name = url_parts[6] %}
 
 server {
 
@@ -25,7 +23,7 @@ server {
     real_ip_recursive on;
 
     location / {
-      proxy_set_header        Host {% if passthrough_host_name %}$host{% else %}reverse.{{ data_environment }}.{{ ssl_router_tld }}{% endif %};
+      proxy_set_header        Host {% if passthrough_host_name %}$host{% else %}{{ upstream_name }}{% endif %};
       proxy_set_header        Via terminator;
       proxy_set_header        X-Forwarded-Host $host;
       proxy_set_header        X-Real-IP $proxy_protocol_addr;
@@ -34,7 +32,7 @@ server {
       proxy_set_header        VGS-Tenant {{ tenant }};
       resolver                {{ dns_resolver }};
 
-      set                     $vault    https://reverse.{{ data_environment }}.{{ ssl_router_tld }};
+      set                     $vault    https://{{ upstream_name }};
       proxy_pass              $vault;
       proxy_read_timeout      90;
     }
@@ -45,5 +43,3 @@ server {
     access_log /var/log/nginx/access.log json_combined;
 
 }
-
-{% endif %}
