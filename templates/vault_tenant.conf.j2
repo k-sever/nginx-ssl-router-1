@@ -30,7 +30,7 @@ server {
       proxy_set_header        X-Forwarded-For $proxy_protocol_addr;
       proxy_set_header        X-Forwarded-Proto $scheme;
       proxy_set_header        VGS-Tenant {{ tenant }};
-      resolver                {{ dns_resolver }};
+      resolver                {{ ansible_dns.nameservers | join (',') }};
 
       set                     $vault    https://{{ upstream_name }};
       proxy_pass              $vault;
