@@ -41,6 +41,9 @@ http {
       '"time": "$time_local", '
       '"remote_addr": "$proxy_protocol_addr", '
       '"remote_user": "$remote_user", '
+      '"tenant": "$tenant", '
+      '"data_environment": "$data_environment", '
+      '"tenant_endpoint": "$tenant_endpoint", '
       '"request": "$request", '
       '"status": $status, '
       '"body_bytes_sent": $body_bytes_sent, '
@@ -91,10 +94,12 @@ stream {
       server forward.sandbox.{{ ssl_router_tld }}:8080 backup;
     }
     server {
+      #set $data_environment live;  # Doesn't work :(
       listen     8080;
       proxy_pass live_forward_proxies;
     }
     server {
+      #set $data_environment sandbox;
       listen     8081;
       proxy_pass sandbox_forward_proxies;
     }
