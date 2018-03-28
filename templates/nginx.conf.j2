@@ -93,6 +93,9 @@ stream {
       server forward.sandbox.{{ ssl_router_tld }}:8080;
       server forward.sandbox.{{ ssl_router_tld }}:8080 backup;
     }
+    
+    resolver {{ dns_resolver }};
+    
     server {
       #set $data_environment live;  # Doesn't work :(
       listen     8080;
