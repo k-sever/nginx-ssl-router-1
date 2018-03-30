@@ -144,8 +144,7 @@ stream {
       '"bytes_sent": $bytes_sent, '
       '"bytes_received": $bytes_received, '
       '"session_time": $session_time, '
-      '"upstream_addr": "$upstream_addr", '
-      '"transport": "$transport"
+      '"upstream_addr": "$upstream_addr" '
       ' }';
 
     access_log /var/log/nginx/stream-access.log stream_json_combined;
