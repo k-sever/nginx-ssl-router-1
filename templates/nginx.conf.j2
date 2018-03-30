@@ -83,12 +83,22 @@ http {
 }
 
 stream {
-    upstream live_forward_proxies {
+    upstream live_forward_sftp_proxies {
+      zone forward_proxies 64k;
+      server forward.live.{{ ssl_router_tld }}:8022;
+      server forward.live.{{ ssl_router_tld }}:8022 backup;
+    }
+    upstream live_forward_http_proxies {
       zone forward_proxies 64k;
       server forward.live.{{ ssl_router_tld }}:8080;
       server forward.live.{{ ssl_router_tld }}:8080 backup;
     }
-    upstream sandbox_forward_proxies {
+    upstream sandbox_forward_sftp_proxies {
+      zone forward_proxies 64k;
+      server forward.sandbox.{{ ssl_router_tld }}:8022;
+      server forward.sandbox.{{ ssl_router_tld }}:8022 backup;
+    }
+    upstream sandbox_forward_http_proxies {
       zone forward_proxies 64k;
       server forward.sandbox.{{ ssl_router_tld }}:8080;
       server forward.sandbox.{{ ssl_router_tld }}:8080 backup;
@@ -98,13 +108,28 @@ stream {
     
     server {
       #set $data_environment live;  # Doesn't work :(
+      set $transport http;
       listen     8080;
-      proxy_pass live_forward_proxies;
+      proxy_pass live_forward_http_proxies;
+    }
+    server {
+      #set $data_environment live;  # Doesn't work :(
+      set $transport sftp;
+      listen     8082;
+      proxy_pass live_forward_sftp_proxies;
+    }
+    
+    server {
+      #set $data_environment sandbox;
+      set $transport http;
+      listen     8081;
+      proxy_pass sandbox_forward_http_proxies;
     }
     server {
       #set $data_environment sandbox;
-      listen     8081;
-      proxy_pass sandbox_forward_proxies;
+      set $transport sftp;
+      listen     8083;
+      proxy_pass sandbox_forward_sftp_proxies;
     }
 
     ##
@@ -119,7 +144,8 @@ stream {
       '"bytes_sent": $bytes_sent, '
       '"bytes_received": $bytes_received, '
       '"session_time": $session_time, '
-      '"upstream_addr": "$upstream_addr" '
+      '"upstream_addr": "$upstream_addr", '
+      '"transport": "$transport"
       ' }';
 
     access_log /var/log/nginx/stream-access.log stream_json_combined;
