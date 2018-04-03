@@ -111,12 +111,14 @@ stream {
       #set $transport http;
       listen     8080;
       proxy_pass live_forward_http_proxies;
+      so_keepalive off;
     }
     server {
       #set $data_environment live;  # Doesn't work :(
       #set $transport sftp;
       listen     8082;
       proxy_pass live_forward_sftp_proxies;
+      so_keepalive off;
     }
     
     server {
@@ -124,12 +126,14 @@ stream {
       #set $transport http;
       listen     8081;
       proxy_pass sandbox_forward_http_proxies;
+      so_keepalive off;
     }
     server {
       #set $data_environment sandbox;
       #set $transport sftp;
       listen     8083;
       proxy_pass sandbox_forward_sftp_proxies;
+      so_keepalive off;
     }
 
     ##
