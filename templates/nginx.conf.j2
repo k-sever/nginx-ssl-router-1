@@ -107,21 +107,21 @@ stream {
     resolver {{ dns_resolver }};
     
     server {
-      listen     8080;
+      listen     8080   proxy_protocol;
       proxy_pass live_forward_http_proxies;
     }
     server {
-      listen     8082;
+      listen     8082   proxy_protocol;
       proxy_pass live_forward_sftp_proxies;
     }
     
     server {
-      listen     8081;
+      listen     8081   proxy_protocol;
       proxy_pass sandbox_forward_http_proxies;
     }
 
     server {
-      listen     8083;
+      listen     8083   proxy_protocol;
       proxy_pass sandbox_forward_sftp_proxies;
     }
 
