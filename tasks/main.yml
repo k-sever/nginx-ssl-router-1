@@ -48,16 +48,17 @@
   shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/ssl.verygoodproxy.cert {{ ssl_router_nginx_config_dir }}verygoodproxy.cert
 
 - name: activate catch all
-  file: src={{ ssl_router_nginx_config_dir }}verygoodproxy.conf dest={{ ssl_router_nginx_enabled_dir }}verygoodproxy.conf state=link
+  file: src={{ ssl_router_nginx_config_dir }}verygoodproxy.conf dest={{ ssl_router_nginx_enabled_dir }}verygoodproxy.conf state=link force=yes
 
 - name: add tenant configs
   template: src=templates/vault_tenant.conf.j2 dest={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config mode=0400
   with_items: "{{ ssl_domains.s3_keys }}"
   when: item.startswith('ssl/2/') | bool
 
-- name: symlink to available
+- name: create symlink
   file: src={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config dest={{ ssl_router_nginx_enabled_dir }}{{ item | basename }}.config state=link
   with_items: "{{ ssl_domains.s3_keys }}"
+  when: item.startswith('ssl/2/') | bool
 
 - name: delete nginx default config
   file: path=/etc/nginx/conf.d/default.conf state=absent
