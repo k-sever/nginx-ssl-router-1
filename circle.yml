@@ -7,6 +7,7 @@ dependencies:
     - pip install 'ansible>=2.1,<2.2'
     - sudo pip install 'boto==2.38.0'
     - pip install setuptools --upgrade
+    - pip install netaddr
 test:
   override:
     - ansible-playbook -i tests/inventory -c local tests/test.yml --syntax-check
