@@ -2,7 +2,7 @@
 # defaults file for nginx-ssl-router
 
 ssl_router_s3_bucket: vault-staging-01-audits-01-citadel-1g2ocxmmm5rqj
-ssl_router_s3_path: ssl/
+ssl_router_s3_path: ssl/rev/
 ssl_router_nginx_config_dir: /etc/nginx/sites-available/
 ssl_router_nginx_enabled_dir: /etc/nginx/sites-enabled/
 # ssl_router_nginx_config_dir: /tmp/available/

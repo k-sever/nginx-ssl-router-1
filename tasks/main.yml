@@ -17,11 +17,11 @@
   action: ec2_facts
 
 - name: lookup certificates
-  s3: bucket="{{ ssl_router_s3_bucket }}" prefix="{{ ssl_router_s3_path }}" mode=list region={{ansible_ec2_placement_region}}
-  register: ssl_domains
+  shell: "aws s3 ls --recursive s3://{{ ssl_router_s3_bucket }}/{{ ssl_router_s3_path }} | awk '{print $4}'"
+  register: s3_keys
 
 - debug: msg="{{ item }}"
-  with_items: "{{ ssl_domains.s3_keys }}"
+  with_items: "{{ s3_keys.stdout_lines  }}"
 
 - name: ensure {{ ssl_router_nginx_config_dir }} exists
   file: path={{ ssl_router_nginx_config_dir }} state=directory
@@ -32,11 +32,11 @@
 # s3 module failing, using shell command
 - name: copy ssl certificates
   shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/{{ item }} {{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert
-  with_items: "{{ ssl_domains.s3_keys }}"
+  with_items: "{{ s3_keys.stdout_lines }}"
 
 - name: set permissions
   file: path="{{ ssl_router_nginx_config_dir }}{{ item | basename }}.cert" mode=0400
-  with_items: "{{ ssl_domains.s3_keys }}"
+  with_items: "{{ s3_keys.stdout_lines }}"
 
 - name: add nginx.conf
   template: src=templates/nginx.conf.j2 dest=/etc/nginx/nginx.conf mode=0644
@@ -52,12 +52,12 @@
 
 - name: add tenant configs
   template: src=templates/vault_tenant.conf.j2 dest={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config mode=0400
-  with_items: "{{ ssl_domains.s3_keys }}"
+  with_items: "{{ s3_keys.stdout_lines  }}"
   when: item.startswith('ssl/2/') | bool
 
 - name: create symlink
   file: src={{ ssl_router_nginx_config_dir }}{{ item | basename }}.config dest={{ ssl_router_nginx_enabled_dir }}{{ item | basename }}.config state=link
-  with_items: "{{ ssl_domains.s3_keys }}"
+  with_items: "{{ s3_keys.stdout_lines  }}"
   when: item.startswith('ssl/2/') | bool
 
 - name: delete nginx default config
