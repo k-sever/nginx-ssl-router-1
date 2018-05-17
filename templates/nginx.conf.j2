@@ -63,6 +63,7 @@ http {
 
     gzip on;
     gzip_disable "msie6";
+    proxy_next_upstream off;
 
     # gzip_vary on;
     # gzip_proxied any;
@@ -86,25 +87,22 @@ stream {
     upstream live_forward_sftp_proxies {
       zone forward_proxies 64k;
       server forward.live.{{ ssl_router_tld }}:8022;
-      server forward.live.{{ ssl_router_tld }}:8022 backup;
     }
     upstream live_forward_http_proxies {
       zone forward_proxies 64k;
       server forward.live.{{ ssl_router_tld }}:8080;
-      server forward.live.{{ ssl_router_tld }}:8080 backup;
     }
     upstream sandbox_forward_sftp_proxies {
       zone forward_proxies 64k;
       server forward.sandbox.{{ ssl_router_tld }}:8022;
-      server forward.sandbox.{{ ssl_router_tld }}:8022 backup;
     }
     upstream sandbox_forward_http_proxies {
       zone forward_proxies 64k;
       server forward.sandbox.{{ ssl_router_tld }}:8080;
-      server forward.sandbox.{{ ssl_router_tld }}:8080 backup;
     }
     
     resolver {{ dns_resolver }};
+    proxy_next_upstream off;
     
     server {
       listen     8080   proxy_protocol;
