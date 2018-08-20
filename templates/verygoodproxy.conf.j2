@@ -1,8 +1,8 @@
 server {
     listen              443 ssl default_server;
     server_name         _;
-    ssl_certificate     {{ ssl_router_nginx_config_dir }}verygoodproxy.cert;
-    ssl_certificate_key {{ ssl_router_nginx_config_dir }}verygoodproxy.cert;
+    ssl_certificate     {{ ssl_router_nginx_config_dir }}verygoodproxy.cert; # TODO: dehardcode filenames
+    ssl_certificate_key {{ ssl_router_nginx_config_dir }}verygoodproxy.cert; # TODO: dehardcode filenames
     ssl_protocols       TLSv1.2;
     ssl_ciphers         HIGH:!aNULL:!MD5;
 
@@ -16,7 +16,7 @@ server {
 
 server {
     listen              80;
-    server_name         ~^(?<tenant>.+)\.(?<data_environment>(live|sandbox))\.verygoodproxy\.(?<tld>(io|com))$;
+    server_name         ~^(?<tenant>.+)\.(?<data_environment>(live|sandbox))\.(?<domain_name>.+)\.(?<tld>(io|com))$;
 
     set_real_ip_from {{ ansible_default_ipv4.network | ipsubnet(16,0) }};
     real_ip_header X-Forwarded-For;
@@ -24,19 +24,47 @@ server {
     proxy_next_upstream off;
 
     location / {
-      proxy_set_header        Host $tenant.$data_environment.verygoodproxy.$tld;
+      proxy_set_header        Host $tenant.$data_environment.$domain_name.$tld;
       proxy_set_header        Via terminator;
       proxy_set_header        X-Forwarded-Host $host;
       proxy_set_header        X-Real-IP $remote_addr;
       proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header        VGS-Tenant $tenant;
       resolver                {{ ansible_dns.nameservers | join (',') }};
-      set                     $vault                                          https://reverse.$data_environment.verygoodproxy.$tld;
+      set                     $vault                                          https://reverse.$data_environment.$domain_name.$tld;
       proxy_pass              $vault;
       proxy_read_timeout      90;
     }
 
-    set $tenant_endpoint $tenant.$data_environment.verygoodproxy.$tld;
+    set $tenant_endpoint $tenant.$data_environment.$domain_name.$tld;
+    access_log /var/log/nginx/access.log json_combined;
+}
+
+server {
+    listen              80;
+    # tntf30c7368.proxy.live.vgs.lendupvault.com
+    server_name         ~^(?<tenant>.+)\.proxy\.(?<data_environment>(live|sandbox))\.vgs\.(?<domain_name>.+)\.(?<tld>(com))$;
+
+    set_real_ip_from {{ ansible_default_ipv4.network | ipsubnet(16,0) }};
+    real_ip_header X-Forwarded-For;
+    real_ip_recursive on;
+    proxy_next_upstream off;
+
+    location / {
+      proxy_set_header        Host $tenant.proxy.$data_environment.vgs.$domain_name.$tld;
+      proxy_set_header        Via terminator;
+      proxy_set_header        X-Forwarded-Host $host;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        VGS-Tenant $tenant;
+      resolver                {{ ansible_dns.nameservers | join (',') }};
+      # reverse.proxy.live.vgs.lendupvault.com
+      set                     $vault                                          https://reverse.proxy.$data_environment.vgs.$domain_name.$tld;
+      proxy_pass              $vault;
+      proxy_read_timeout      90;
+    }
+
+    set $tenant_endpoint $tenant.proxy.$data_environment.vgs.$domain_name.$tld;
     access_log /var/log/nginx/access.log json_combined;
 }
 
