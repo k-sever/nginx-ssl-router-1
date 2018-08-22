@@ -9,6 +9,8 @@
 {% set tenant = url_parts[5] %}
 {% set custom_host_name = url_parts[6] %}
 
+{% set upstream = ssl_router_upstream_overrides_chn.get(custom_host_name) or upstream_name %}
+
 server {
 
     listen              443 ssl proxy_protocol;
@@ -24,7 +26,7 @@ server {
     proxy_next_upstream off;
 
     location / {
-      proxy_set_header        Host {% if passthrough_host_name %}$host{% else %}{{ upstream_name }}{% endif %};
+      proxy_set_header        Host {% if passthrough_host_name %}$host{% else %}{{ upstream }}{% endif %};
       proxy_set_header        Via terminator;
       proxy_set_header        X-Forwarded-Host $host;
       proxy_set_header        X-Real-IP $proxy_protocol_addr;
@@ -33,7 +35,7 @@ server {
       proxy_set_header        VGS-Tenant {{ tenant }};
       resolver                {{ dns_resolver }};
 
-      set                     $vault    https://{{ upstream_name }};
+      set                     $vault    https://{{ upstream }};
       proxy_pass              $vault;
       proxy_read_timeout      90;
     }

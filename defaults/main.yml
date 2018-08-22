@@ -11,3 +11,5 @@ dns_resolver: "{{ ansible_dns.nameservers | join (',') }}"
 
 cert_mgr_url: http://certificates.verygoodsecurity.io
 ssl_router_tld: verygoodproxy.io
+ssl_router_upstream_overrides_tnt: {}
+ssl_router_upstream_overrides_chn: {}
