@@ -13,3 +13,6 @@ cert_mgr_url: http://certificates.verygoodsecurity.io
 ssl_router_tld: verygoodproxy.io
 ssl_router_upstream_overrides_tnt: {}
 ssl_router_upstream_overrides_chn: {}
+
+# General tenants proxy-pass
+ssl_router_general_proxy_pass: {}
