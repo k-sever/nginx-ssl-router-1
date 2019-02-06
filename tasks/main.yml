@@ -44,8 +44,13 @@
 - name: add catch all
   template: src=templates/verygoodproxy.conf.j2 dest={{ ssl_router_nginx_config_dir }}verygoodproxy.conf mode=0400
 
+- name: lookup catch all certificate
+  shell: "aws s3 ls --recursive s3://{{ ssl_router_s3_bucket }}/ssl.verygoodproxy.cert | awk '{print $4}'"
+  register: s3_catch_all_key
+
 - name: add catch all certificate
-  shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/ssl.verygoodproxy.cert {{ ssl_router_nginx_config_dir }}verygoodproxy.cert
+  shell: aws s3 cp s3://{{ ssl_router_s3_bucket }}/{{ item }} {{ ssl_router_nginx_config_dir }}verygoodproxy.cert
+  with_items: "{{ s3_catch_all_key.stdout_lines }}"
 
 - name: activate catch all
   file: src={{ ssl_router_nginx_config_dir }}verygoodproxy.conf dest={{ ssl_router_nginx_enabled_dir }}verygoodproxy.conf state=link force=yes

@@ -1,11 +1,15 @@
 ---
-- hosts: test_runners 
+- hosts: test_runners
   become: yes
   vars_files:
     - ../defaults/main.yml
-  vars:
-    - ansible_ec2_placement_region: us-west-2
-    - ssl_router_s3_bucket: very-good
-    - ssl_router_s3_path: circleci-ssl-test
   roles:
-    - nginx-ssl-router
+    - role: nginx-ssl-router
+      ansible_ec2_placement_region: us-west-2
+      ssl_router_s3_bucket: very-good
+      ssl_router_s3_path: circleci-ssl-test
+      ssl_router_general_proxy_pass:
+        server_name: '~^(?<tenant>.+)\.proxy\.(?<data_environment>(live|sandbox))\.vgs\.(?<domain_name>.+)\.(?<tld>(com))$;'
+        proxy_set_header: 'Host $tenant.proxy.$data_environment.vgs.$domain_name.$tld;'
+        proxy_pass_url: 'https://reverse.proxy.$data_environment.vgs.$domain_name.$tld;'
+        tenant_endpoint: '$tenant.proxy.$data_environment.vgs.$domain_name.$tld;'
