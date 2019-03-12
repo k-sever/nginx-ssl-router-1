@@ -108,6 +108,7 @@ stream {
 
     server {
       listen     8080   proxy_protocol;
+      proxy_protocol      on;
       proxy_pass live_forward_http_proxies;
     }
     server {
@@ -117,6 +118,7 @@ stream {
 
     server {
       listen     8081   proxy_protocol;
+      proxy_protocol      on;
       proxy_pass sandbox_forward_http_proxies;
     }
 
