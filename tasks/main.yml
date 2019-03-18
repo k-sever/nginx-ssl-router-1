@@ -16,6 +16,50 @@
 - name: Gather facts
   action: ec2_facts
 
+- name: fetch new nginx
+  shell: "aws s3 cp s3://{{ cfn_bucket }}/infra-vault/bin/terminator/{{ nginx_version }}.tgz {{ nginx_version }}.tgz || true"
+
+- name: check that file exists
+  stat:
+    path: "{{ nginx_version }}.tgz"
+  register: nginx_archive
+
+- name: extract nginx
+  unarchive:
+    src: "{{ nginx_version }}.tgz"
+    dest: /tmp/
+  when: nginx_archive.stat.exists
+
+- name: current nginx checksum
+  stat:
+    path: "/usr/sbin/nginx"
+    get_checksum: yes
+  register: current_nginx
+
+- name: new nginx checksum
+  stat:
+    path: /tmp/nginx
+    get_checksum: yes
+  register: new_nginx
+  when: nginx_archive.stat.exists
+
+- name: clean modules-enabled dir
+  file:
+    state: absent
+    path: "/etc/nginx/modules-enabled/"
+  when: nginx_archive.stat.exists and current_nginx.stat.checksum != new_nginx.stat.checksum
+
+- name: copy new nginx
+  copy:
+    src: "/tmp/nginx"
+    dest: "/usr/sbin/nginx"
+    mode: 0755
+  when: nginx_archive.stat.exists and current_nginx.stat.checksum != new_nginx.stat.checksum
+
+- name: restart new nginx
+  service: name=nginx state=restarted
+  when: (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu') and (nginx_archive.stat.exists and current_nginx.stat.checksum != new_nginx.stat.checksum)
+
 - name: lookup certificates
   shell: "aws s3 ls --recursive s3://{{ ssl_router_s3_bucket }}/{{ ssl_router_s3_path }} | awk '{print $4}'"
   register: s3_keys
