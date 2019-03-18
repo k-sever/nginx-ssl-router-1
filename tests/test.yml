@@ -7,7 +7,7 @@
     - role: nginx-ssl-router
       ansible_ec2_placement_region: us-west-2
       ssl_router_s3_bucket: very-good
-      nginx_version: 'nginx-1.14.2-0.0.13'
+      nginx_version: 'nginx-1.14.2-0.0.14'
       cfn_bucket: vault-dev-01-audits-01-cfn-1t52zeg9m6v0p
       ssl_router_s3_path: circleci-ssl-test
       ssl_router_general_proxy_pass:
