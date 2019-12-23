@@ -88,7 +88,7 @@ http {
 stream {
     upstream live_forward_sftp_proxies {
       zone forward_proxies 64k;
-      server app.live.{{ ssl_router_tld }}:8022;
+      server sftp.live.{{ ssl_router_tld }}:8022;
     }
     upstream live_forward_http_proxies {
       zone forward_proxies 64k;
@@ -96,7 +96,7 @@ stream {
     }
     upstream sandbox_forward_sftp_proxies {
       zone forward_proxies 64k;
-      server app.sandbox.{{ ssl_router_tld }}:8022;
+      server sftp.sandbox.{{ ssl_router_tld }}:8022;
     }
     upstream sandbox_forward_http_proxies {
       zone forward_proxies 64k;
