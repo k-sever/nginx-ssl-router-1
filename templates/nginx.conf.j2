@@ -22,7 +22,7 @@ http {
     types_hash_max_size 2048;
     server_tokens off;
 
-    # server_names_hash_bucket_size 64;
+    server_names_hash_bucket_size 128;
     # server_name_in_redirect off;
 
     include /etc/nginx/mime.types;
@@ -86,21 +86,13 @@ http {
 }
 
 stream {
-    upstream live_forward_sftp_proxies {
+    upstream forward_http_proxy {
       zone forward_proxies 64k;
-      server sftp.live.{{ ssl_router_tld }}:8022;
+      server app.{{ ssl_router_data_env }}.{{ ssl_router_tld }}:8080;
     }
-    upstream live_forward_http_proxies {
+    upstream sftp_proxy {
       zone forward_proxies 64k;
-      server app.live.{{ ssl_router_tld }}:8080;
-    }
-    upstream sandbox_forward_sftp_proxies {
-      zone forward_proxies 64k;
-      server sftp.sandbox.{{ ssl_router_tld }}:8022;
-    }
-    upstream sandbox_forward_http_proxies {
-      zone forward_proxies 64k;
-      server app.sandbox.{{ ssl_router_tld }}:8080;
+      server sftp.{{ ssl_router_data_env }}.{{ ssl_router_tld }}:8022;
     }
 
     resolver {{ dns_resolver }};
@@ -110,23 +102,12 @@ stream {
       listen     8080   proxy_protocol;
       proxy_protocol      on;
       set_real_ip_from    10.0.0.0/8;
-      proxy_pass live_forward_http_proxies;
-    }
-    server {
-      listen     8082   proxy_protocol;
-      proxy_pass live_forward_sftp_proxies;
+      proxy_pass forward_http_proxy;
     }
 
     server {
-      listen     8081   proxy_protocol;
-      proxy_protocol      on;
-      set_real_ip_from    10.0.0.0/8;
-      proxy_pass sandbox_forward_http_proxies;
-    }
-
-    server {
-      listen     8083   proxy_protocol;
-      proxy_pass sandbox_forward_sftp_proxies;
+      listen     8022   proxy_protocol;
+      proxy_pass sftp_proxy;
     }
 
     ##

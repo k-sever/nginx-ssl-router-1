@@ -14,6 +14,7 @@ cert_mgr_url: http://certificates.verygoodsecurity.io
 ssl_router_tld: verygoodproxy.io
 ssl_router_upstream_overrides_tnt: {}
 ssl_router_upstream_overrides_chn: {}
+ssl_router_data_env: "sandbox"
 
 # General tenants proxy-pass
 ssl_router_general_proxy_pass: {}
