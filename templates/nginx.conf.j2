@@ -92,7 +92,7 @@ stream {
     }
     upstream sftp_proxy {
       zone forward_proxies 64k;
-      server app.{{ ssl_router_data_env }}.{{ ssl_router_tld }}:8022;
+      server sftp.{{ ssl_router_data_env }}.{{ ssl_router_tld }}:8022;
     }
 
     resolver {{ dns_resolver }};
